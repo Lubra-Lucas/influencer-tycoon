@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { newState, tap, buy, advance, load, fmt, perSecond, cost, ITEMS, OFFLINE_CAP_S } from './game.js';
+import { newState, tap, buy, advance, load, fmt, perSecond, cost, crew, ITEMS, OFFLINE_CAP_S } from './game.js';
 
 test('toque, viral e compra', () => {
   const s = newState(0);
@@ -40,4 +40,14 @@ test('numeros grandes', () => {
   assert.equal(fmt(1500), '1,5 mil');
   assert.equal(fmt(999_999), '999,9 mil');
   assert.equal(fmt(2.3e9), '2,3 bi');
+});
+
+test('ajudantes dividem a renda do item sem inventar seguidor', () => {
+  const s = newState(0);
+  assert.deepEqual(crew(s), []);
+  s.owned = { celular: 5, ringlight: 1, unha: 3 }; // unha e de toque: nao anda
+  const c = crew(s);
+  assert.deepEqual(c.map((h) => h.id), ['ringlight', 'celular', 'celular']);
+  assert.equal(c[1].rate, 2.5);
+  assert.ok(Math.abs(c.reduce((t, h) => t + h.rate, 0) - perSecond(s)) < 1e-9);
 });

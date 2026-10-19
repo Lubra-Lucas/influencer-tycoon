@@ -35,6 +35,13 @@ export const cost = (item, state) => Math.ceil(item.cost * item.growth ** (state
 const sum = (state, key) => ITEMS.reduce((s, it) => s + (it[key] || 0) * (state.owned[it.id] || 0), 0);
 export const perSecond = (state) => sum(state, 'auto');
 export const perTap = (state) => 1 + sum(state, 'tap');
+// Ajudantes que andam na tela: ate CREW_PER_ITEM por item de renda, dividindo a renda dele.
+export const CREW_PER_ITEM = 2;
+export const crew = (state) => ITEMS.filter((it) => it.auto && state.owned[it.id]).flatMap((it) => {
+  const n = state.owned[it.id];
+  const k = Math.min(n, CREW_PER_ITEM);
+  return Array.from({ length: k }, (_, i) => ({ id: it.id, i, rate: (it.auto * n) / k }));
+});
 export const title = (state) => TITLES.findLast(([min]) => state.total >= min)[1];
 
 function gain(state, n) {

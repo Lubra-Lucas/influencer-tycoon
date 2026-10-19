@@ -30,20 +30,19 @@
     #title { display: inline-block; margin-top: 8px; padding: 4px 8px; border: 2px solid var(--line); color: var(--line); }
 
     main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
-    #stage { position: relative; display: grid; place-items: center; padding: 8px; }
-    #star {
-      background: none; border: 0; padding: 0; cursor: pointer;
-      width: min(56vw, 34vh, 280px); aspect-ratio: 16 / 20;
-      transition: transform 60ms;
-    }
-    #star:active { transform: scale(0.92, 0.88); }
-    #star:focus-visible { outline: 3px dashed var(--gold); outline-offset: 6px; }
-    canvas { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
-    #hint { color: var(--muted); margin: 4px 0 0; }
+    #play { display: flex; flex-direction: column; }
+    /* o cenario tem altura propria: o canvas se ajusta a ela em escala inteira */
+    #stage { position: relative; height: 40vh; min-height: 180px; display: grid; place-items: center; overflow: hidden; }
+    #star { background: none; border: 0; padding: 0; cursor: pointer; display: block; line-height: 0; }
+    #star:focus-visible { outline: 3px dashed var(--gold); outline-offset: 3px; }
+    canvas { image-rendering: pixelated; display: block; border: 3px solid #000; }
+    #hint { position: absolute; bottom: 6px; left: 0; right: 0; text-align: center; color: var(--text);
+            text-shadow: 2px 2px 0 #000; margin: 0; pointer-events: none; }
 
     .pop { position: absolute; pointer-events: none; color: var(--text); text-shadow: 2px 2px 0 #000;
            animation: up 0.9s ease-out forwards; }
     .pop.viral { color: var(--gold); font-size: 14px; }
+    .pop.auto { color: var(--ok); font-size: 10px; animation-duration: 1.2s; }
     @keyframes up { to { transform: translateY(-80px); opacity: 0; } }
 
     #shop { flex: 1; min-height: 0; overflow-y: auto; padding: 0 12px 16px; -webkit-overflow-scrolling: touch; }
@@ -55,6 +54,7 @@
       padding: 10px; margin-bottom: 8px; cursor: pointer;
     }
     .item:disabled { opacity: 0.45; cursor: default; }
+    @media (hover: hover) { .item:not(:disabled):hover { border-color: var(--line); } }
     .item:not(:disabled):active { transform: translateY(2px); }
     .item small { grid-column: 1; color: var(--muted); font-size: 8px; }
     .item .count { color: var(--gold); text-align: right; }
@@ -66,26 +66,29 @@
     }
     #toast button { margin-top: 10px; font: inherit; background: var(--line); color: #000; border: 3px solid #000; padding: 8px 12px; }
 
+    /* computador: cenario a esquerda ocupando a altura toda, loja a direita */
     @media (min-width: 820px) {
       body { font-size: 12px; }
-      main { flex-direction: row; max-width: 1100px; width: 100%; margin: 0 auto; }
-      #stage { flex: 1; }
-      #star { width: min(40vw, 60vh, 380px); }
-      #shop { flex: 0 0 420px; }
+      main { flex-direction: row; max-width: 1280px; width: 100%; margin: 0 auto; gap: 16px; padding: 0 16px 16px; }
+      #play { flex: 1; min-width: 0; }
+      #stage { flex: 1; height: auto; }
+      #shop { flex: 0 0 400px; padding: 0 4px 0 0; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <div id="followers">0</div>
-    <div id="rates"></div>
-    <div id="title"></div>
-  </header>
   <main>
-    <section id="stage">
-      <button id="star" aria-label="Postar: ganhar seguidores"><canvas width="16" height="20"></canvas></button>
-      <p id="hint">toque pra postar</p>
-    </section>
+    <div id="play">
+      <header>
+        <div id="followers">0</div>
+        <div id="rates"></div>
+        <div id="title"></div>
+      </header>
+      <section id="stage">
+        <button id="star" aria-label="Postar: ganhar seguidores"><canvas></canvas></button>
+        <p id="hint">toque pra postar</p>
+      </section>
+    </div>
     <section id="shop" aria-label="Loja"></section>
   </main>
   <div id="toast" hidden><p id="toast-text"></p><button type="button">Arrasou</button></div>
