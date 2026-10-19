@@ -9,6 +9,11 @@ try {
 } catch {
   state = newState(); // localStorage bloqueado (aba anonima etc.)
 }
+// shortcut: ?teste da 1 bi de seguidores para testar a loja, tirar quando o jogo for lancado
+if (new URLSearchParams(location.search).has('teste')) {
+  state.followers = Math.max(state.followers, 1e9);
+  state.total = Math.max(state.total, state.followers);
+}
 
 function save() {
   try {
