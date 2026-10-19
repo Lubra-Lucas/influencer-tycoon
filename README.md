@@ -21,7 +21,8 @@ node --test
 ## Arquivos
 
 - `game.js`: regras (itens, custos, toque, viral, tempo offline, save). Sem DOM.
-- `main.js`: tela, pixel art da personagem, loja, loop e save no `localStorage`.
+- `main.js`: tela, mapa da fazendinha em canvas, loja, loop e save no `localStorage`.
+- `art/`: artes em PNG geradas no PixelLab (retrato, blogueira, casas, areas).
 - `index.html`: layout (celular primeiro; vira duas colunas a partir de 820px).
 
 ## Publicar

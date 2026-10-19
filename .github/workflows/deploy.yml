@@ -27,7 +27,7 @@ jobs:
           node-version: 22
       - run: node --test
       # sem build: publica so os arquivos do jogo
-      - run: mkdir site && cp index.html main.js game.js site/
+      - run: mkdir site && cp -r index.html main.js game.js art site/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

@@ -24,25 +24,28 @@
       display: flex; flex-direction: column;
       padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     }
-    header { text-align: center; padding: 12px 16px 4px; }
-    #followers { font-size: 22px; color: var(--gold); text-shadow: 3px 3px 0 #000; word-break: break-all; }
-    #rates { color: var(--muted); margin-top: 6px; }
-    #title { display: inline-block; margin-top: 8px; padding: 4px 8px; border: 2px solid var(--line); color: var(--line); }
-
-    main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
-    #play { display: flex; flex-direction: column; }
-    /* o cenario tem altura propria: o canvas se ajusta a ela em escala inteira */
-    #stage { position: relative; height: 40vh; min-height: 180px; display: grid; place-items: center; overflow: hidden; }
-    #star { background: none; border: 0; padding: 0; cursor: pointer; display: block; line-height: 0; }
-    #star:focus-visible { outline: 3px dashed var(--gold); outline-offset: 3px; }
-    canvas { image-rendering: pixelated; display: block; border: 3px solid #000; }
-    #hint { position: absolute; top: 6px; left: 0; right: 0; text-align: center; color: var(--text);
-            text-shadow: 2px 2px 0 #000; margin: 0; pointer-events: none; }
-    #goal { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); width: min(90%, 384px);
-            height: 22px; border: 3px solid #000; background: var(--panel); overflow: hidden; pointer-events: none; }
+    /* painel do personagem: retrato + numeros; no celular a barra fica embaixo */
+    #hud { display: grid; grid-template-columns: auto 1fr; gap: 8px 12px; align-items: center; margin: 8px 8px 0;
+           padding: 8px; background: var(--panel); border: 3px solid #000; }
+    #hud img { grid-row: 1; width: 64px; height: 64px; image-rendering: pixelated; display: block; }
+    #hud b { color: var(--line); }
+    #followers { font-size: 18px; color: var(--gold); text-shadow: 3px 3px 0 #000; word-break: break-all; margin-top: 4px; }
+    #rates { color: var(--muted); margin-top: 4px; font-size: 8px; }
+    #title { display: inline-block; margin-top: 4px; padding: 2px 6px; border: 2px solid var(--line); color: var(--line); font-size: 8px; }
+    #goal { grid-column: 1 / -1; position: relative; height: 22px; border: 3px solid #000; background: var(--bg); overflow: hidden; }
     #goal span { position: relative; z-index: 1; display: block; text-align: center; font-size: 8px; line-height: 16px;
                  text-shadow: 2px 2px 0 #000; white-space: nowrap; }
     #goal i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: #b3306a; }
+
+    main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    #play { display: flex; flex-direction: column; }
+    /* o mapa tem a proporcao do canvas: o canvas se ajusta em escala inteira, sem faixa vazia */
+    #stage { position: relative; aspect-ratio: 192 / 160; max-height: 55vh; margin: 8px auto 0; width: 100%; display: grid; place-items: center; overflow: hidden; }
+    #star { background: none; border: 0; padding: 0; cursor: pointer; display: block; line-height: 0; }
+    #star:focus-visible { outline: 3px dashed var(--gold); outline-offset: 3px; }
+    canvas { image-rendering: pixelated; display: block; border: 3px solid #000; }
+    #hint { position: absolute; bottom: 6px; left: 0; right: 0; text-align: center; color: var(--text);
+            text-shadow: 2px 2px 0 #000; margin: 0; pointer-events: none; }
 
     .pop { position: absolute; pointer-events: none; color: var(--text); text-shadow: 2px 2px 0 #000;
            animation: up 0.9s ease-out forwards; }
@@ -71,12 +74,17 @@
     }
     #toast button { margin-top: 10px; font: inherit; background: var(--line); color: #000; border: 3px solid #000; padding: 8px 12px; }
 
-    /* computador: cenario a esquerda ocupando a altura toda, loja a direita */
+    /* computador: painel e mapa a esquerda, loja a direita */
     @media (min-width: 820px) {
       body { font-size: 12px; }
-      main { flex-direction: row; max-width: 1280px; width: 100%; margin: 0 auto; gap: 16px; padding: 0 16px 16px; }
+      main { flex-direction: row; max-width: 1280px; width: 100%; margin: 0 auto; gap: 16px; padding: 16px; }
       #play { flex: 1; min-width: 0; }
-      #stage { flex: 1; height: auto; }
+      #hud { margin: 0; gap: 8px 16px; }
+      #hud img { grid-row: 1 / span 2; width: 128px; height: 128px; }
+      #goal { grid-column: 2; }
+      #followers { font-size: 22px; }
+      #rates, #title { font-size: 10px; }
+      #stage { flex: 1; aspect-ratio: auto; max-height: none; margin-top: 16px; place-items: start center; }
       #shop { flex: 0 0 400px; padding: 0 4px 0 0; }
     }
   </style>
@@ -84,14 +92,18 @@
 <body>
   <main>
     <div id="play">
-      <header>
-        <div id="followers">0</div>
-        <div id="rates"></div>
-        <div id="title"></div>
+      <header id="hud">
+        <img src="art/retrato.png" alt="Retrato da blogueira" />
+        <div>
+          <b>@blogueira</b><br />
+          <span id="title"></span>
+          <div id="followers">0</div>
+          <div id="rates"></div>
+        </div>
+        <div id="goal"><span></span><i></i></div>
       </header>
       <section id="stage">
         <button id="star" aria-label="Postar: ganhar seguidores"><canvas></canvas></button>
-        <div id="goal"><span></span><i></i></div>
         <p id="hint">toque pra postar</p>
       </section>
     </div>

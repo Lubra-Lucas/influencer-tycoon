@@ -23,33 +23,7 @@ function save() {
   }
 }
 
-// --- pixel art: cada letra e uma cor ---
-const PALETTE = {
-  h: '#ffd36e', H: '#e0a83c', s: '#f8c9a8', e: '#3a2340', l: '#e8487a',
-  d: '#ff7eb6', D: '#c94f92', p: '#2b2b3a', w: '#9ff0ff', k: '#7a2d5a',
-};
-const SPRITE = [
-  '.....hhhhhh.....',
-  '....hhhhhhhh....',
-  '...hhHhhhhhhh...',
-  '...hhsssssshh...',
-  '...hhsesseshh...',
-  '...hhsssssshh...',
-  '...hhssllsshh...',
-  '...hhhsssshhh...',
-  '...hhh.ss.hhh...',
-  '....hddddddh.pp.',
-  '...dddddddddswp.',
-  '..sdddddddddswp.',
-  '..s.dddddddd.pp.',
-  '....DddddddD....',
-  '...DddddddddD...',
-  '..DddddddddddD..',
-  '..DDDDDDDDDDDD..',
-  '.....ss..ss.....',
-  '.....ss..ss.....',
-  '....kkk..kkk....',
-];
+// --- pixel art de codigo: cada letra e uma cor ---
 // ajudante 6x10; a = o item na mao. Dois quadros de pernas para andar.
 const HELPER = ['.hhhh.', 'hhhhhh', 'hseseh', '.ssss.', '.cccc.', 'scccca', '.cccc.', '.pppp.'];
 const LEGS = [['.p..p.', '.k..k.'], ['..pp..', '..kk..']];
@@ -65,96 +39,128 @@ const CREW_LOOK = {
 };
 const BASE_LOOK = { s: '#f8c9a8', e: '#3a2340', p: '#2b2b3a', k: '#7a2d5a' };
 
-// cenario em pixels logicos; o canvas e ampliado so em escala inteira para o pixel ficar nitido
-const W = 96, H = 64, FLOOR = 44;
+// as areas sem arte do PixelLab: desenhadas em codigo, em escala 2
+const PROP_PAL = {
+  g: '#2b2b3a', w: '#9ff0ff', t: '#5a4a6a', c: '#7a4a2a', m: '#a8744a', M: '#6a4228', n: '#c9c9d9', b: '#7dffb3',
+  f: '#fff4fb', r: '#e8487a', o: '#000000', d: '#ff7eb6', D: '#c94f92', Y: '#ffd36e', s: '#f8c9a8', k: '#3a2340',
+};
+const PROPS = {
+  celular: [
+    '........dddddddddddddddd', '........dddddddddddddddd', '..gggg..dddfdddddddYdddd', '.gwwwwg.ddfffdddddddddYd',
+    '.gwwwwg.dddfdddddddddddd', '.gwwwwg.dddddddddddddddd', '.gwwwwg.dddddddddddddddd', '.gwwwwg.dddddddddddddddd',
+    '.gggggg.dddddddddddddddd', '...tt...dddddddddddddddd', '...tt...DDDDDDDDDDDDDDDD', '..t..t..................',
+    '.t....t.................', 'tt....tt................',
+  ],
+  estagiaria: [
+    '.........cccccc.........', '.........skssks.........', '.........ssssss.........', '.ffff...bbbbbbbb....n...',
+    '.fnnf...bbbbbbbb...cccc.', '.ffff...bbbbbbbb...cccc.', 'mmmmmmmmmmmmmmmmmmmmmmmm', 'MMMMMMMMMMMMMMMMMMMMMMMM',
+    'M......................M', 'M......................M', 'M......................M',
+  ],
+  fofoca: [
+    '.fffffff.......fffffff..', '.fo.o.of.......fo.o.of..', '.fffffff.......fffffff..', '...f.............f......',
+    '........gggggggg........', '........gbbbbbbg........', '........gbbbbbbg........', '......nnnnnnnnnnnn......',
+    'mmmmmmmmmmmmmmmmmmmmmmmm', 'MMMMMMMMMMMMMMMMMMMMMMMM', 'M......................M', 'M......................M',
+  ],
+  assessoria: [
+    '.........gggggg.........', '.........gggggg.........', '.........gggggg.........', '.fff.....gggggg.YYYYYY..',
+    '.fff.....gggggg.YrrrrY..', '.fff.....gggggg.YYYYYY..', 'mmmmmmmmmmmmmmmmmmmmmmmm', 'MMMMMMMMMMMMMMMMMMMMMMMM',
+    'M......................M', 'M......................M', 'M......................M',
+  ],
+  reality: [
+    '.ofofofofof.............', '.oooooooooo....gggg.....', '.ofrfrfrfoo...ggYYgg....', '.offfffffoo....gYYg.....',
+    '.oooooooooo.....g.......', '................g.......', '.dddddddddddd...g.......', '.dddddddddddd.gggggg....',
+  ],
+};
+const SIGN = ['ooooooooo', 'offfrffoo', 'offrrrfoo', 'ofrfrffoo', 'offrrrfoo', 'offfrrfoo', 'ofrrrffoo', 'offfrffoo', 'ooooooooo'];
+
+// mapa visto de cima em pixels logicos; o canvas e ampliado so em escala inteira para o pixel ficar nitido
+const W = 192, H = 160;
 const canvas = $('canvas');
 const ctx = canvas.getContext('2d');
 canvas.width = W;
 canvas.height = H;
+ctx.imageSmoothingEnabled = false;
 
+const box = (c, x, y, w, h, g = ctx) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
 function draw(rows, pal, x, y, scale = 1, flip = false) {
   rows.forEach((row, ry) => [...row].forEach((c, rx) => {
-    if (!pal[c]) return;
-    ctx.fillStyle = pal[c];
-    ctx.fillRect(Math.round(x) + (flip ? row.length - 1 - rx : rx) * scale, Math.round(y) + ry * scale, scale, scale);
+    if (pal[c]) box(pal[c], Math.round(x) + (flip ? row.length - 1 - rx : rx) * scale, Math.round(y) + ry * scale, scale, scale);
   }));
 }
 
-const room = document.createElement('canvas');
-room.width = W;
-room.height = H;
-const HOME_LOOK = [
-  { wall: '#4a2266', stripe: '#52276f', floor: '#6b3d7a', plank: '#5a2f68',
-    detail: (box) => {
-      box('#2a1238', 8, 10, 12, 10); box('#9ff0ff', 9, 11, 10, 8); box('#2a1238', 13, 11, 2, 8); // janelinha
-      for (let k = 0; k < 14; k++) box('#ff7eb6', 72 + k, 8 + Math.floor(k / 5), 1, 12); // poster torto
-      box('#fff4fb', 75, 12, 2, 2); box('#fff4fb', 81, 13, 2, 2); box('#e8487a', 76, 17, 6, 1);
-      box('#3a1a52', 50, 11, 5, 4); box('#3a1a52', 52, 15, 3, 1); // mancha de umidade
-    } },
-  { wall: '#6a3a8a', stripe: '#73449a', floor: '#8a5a6a', plank: '#744a5a', toast: 'Mudou pra Kitnet! O aluguel e caro mas a luz natural engaja.',
-    detail: (box) => {
-      box('#2a1238', 6, 6, 20, 16); box('#9ff0ff', 7, 7, 18, 14); box('#2a1238', 15, 7, 2, 14); box('#2a1238', 7, 13, 18, 1); // janela maior
-      box('#ff7eb6', 7, 7, 4, 14); box('#c94f92', 10, 7, 1, 14); box('#ff7eb6', 21, 7, 4, 14); box('#c94f92', 21, 7, 1, 14); // cortina
-      box('#2a1238', 74, 10, 12, 9); box('#ffd36e', 75, 11, 10, 7); box('#e8487a', 78, 13, 4, 3); // quadrinho
-    } },
-  { wall: '#3d4f86', stripe: '#465a94', floor: '#a87a5a', plank: '#8d6347', toast: 'Apartamento! Agora o fundo do story tem predio e voce tem boleto.',
-    detail: (box) => {
-      box('#2a1238', 4, 4, 24, 20); box('#7fd0f0', 5, 5, 22, 18); // janela grande com predios
-      box('#2b3a66', 6, 14, 5, 9); box('#2b3a66', 12, 10, 6, 13); box('#2b3a66', 19, 15, 7, 8);
-      for (const [x, y] of [[7, 16], [9, 19], [14, 12], [16, 16], [14, 20], [21, 17], [24, 20]]) box('#ffd36e', x, y, 1, 2);
-      box('#2a1238', 14, 5, 1, 18);
-      box('#2a1238', 70, 8, 16, 12); box('#fff4fb', 71, 9, 14, 10); box('#ff7eb6', 75, 11, 6, 6); box('#e8487a', 77, 13, 2, 2); // quadro
-    } },
-  { wall: '#1e2a4a', stripe: '#243256', floor: '#3a3a4e', plank: '#2c2c3e', toast: 'Cobertura! A vista e linda, o condominio e um assalto.',
-    detail: (box) => {
-      for (const [x, y, w, h] of [[4, 4, 24, 20], [68, 4, 24, 16]]) { // vidro com ceu
-        box('#c8d8ff', x - 1, y - 1, w + 2, h + 2); box('#10183a', x, y, w, h);
-        for (const [dx, dy] of [[3, 3], [9, 8], [15, 4], [19, 12], [6, 14], [12, 17]]) if (dx < w && dy < h) box('#fff4fb', x + dx, y + dy, 1, 1);
-      }
-      box('#fff4b0', 20, 7, 4, 4); box('#10183a', 22, 6, 3, 3); // lua
-      box('#fff4b0', 83, 8, 4, 4); box('#10183a', 85, 7, 3, 3);
-    } },
-  { wall: '#7a2d3a', stripe: '#8a3646', floor: '#d9c7a0', plank: '#b8a47c', toast: 'Mansao! Tem lustre dourado e zero privacidade, igual sua vida.',
-    detail: (box) => {
-      box('#ffd36e', 47, 0, 2, 4); box('#ffd36e', 40, 4, 16, 2); // lustre
-      for (const x of [40, 45, 50, 55]) box('#fff4b0', x, 1, 1, 3);
-      for (const [x, w] of [[42, 1], [47, 2], [53, 1]]) box('#fff4b0', x, 6, w, 2);
-      box('#ffd36e', 6, 6, 18, 18); box('#9ff0ff', 8, 8, 14, 14); box('#ffd36e', 14, 8, 2, 14); // janela com cortina dourada
-      box('#c94f92', 8, 8, 3, 14); box('#c94f92', 19, 8, 3, 14);
-      box('#ffd36e', 69, 5, 20, 17); box('#2a1238', 71, 7, 16, 13); box('#f8c9a8', 77, 10, 4, 5); box('#ffd36e', 76, 9, 6, 2); box('#e8487a', 76, 16, 6, 3); // quadro com moldura
-    } },
-];
+// imagens do PixelLab: se o arquivo faltar, o mapa continua inteiro
+const img = (name) => Object.assign(new Image(), { src: `art/${name}.png` });
+const ready = (im) => im?.complete && im.naturalWidth;
+const CASA = [0, 1, 2, 3, 4].map((i) => img(`casa-${i}`));
+const GIRL = img('blogueira'), GIRL_POS = [72, 64], GIRL_FEET = 101;
+const ART = { ringlight: img('estudio'), bots: img('bots'), cosmeticos: img('cosmeticos') };
 
-function paintRoom(i) {
-  const L = HOME_LOOK[i], r = room.getContext('2d');
-  const box = (c, x, y, w, h) => { r.fillStyle = c; r.fillRect(x, y, w, h); };
-  box(L.wall, 0, 0, W, FLOOR);
-  for (let x = 3; x < W; x += 8) box(L.stripe, x, 0, 1, FLOOR);
-  box(L.floor, 0, FLOOR, W, H - FLOOR);
-  for (let y = FLOOR + 4; y < H; y += 5) box(L.plank, 0, y, W, 1);
-  box('#2a1238', 0, FLOOR - 2, W, 2);
-  L.detail(box);
+// 8 lotes na ordem de ITEMS: 3 a esquerda, 3 a direita, 2 embaixo. A rota (pes do ajudante) vai do lote
+// ate a blogueira em L pelo caminho de terra: tronco vertical rente a casa, depois horizontal.
+const LOT = { w: 56, h: 38 };
+const SLOTS = [[4, 1], [4, 40], [4, 79], [132, 1], [132, 40], [132, 79], [36, 119], [100, 119]];
+const AREAS = ITEMS.filter((it) => it.auto).map((it, i) => {
+  const [x, y] = SLOTS[i], cx = x + LOT.w / 2, fy = y + LOT.h - 4, left = cx < 96;
+  const route = y > 100 ? [[cx, fy], [cx, 110], [left ? 86 : 106, 110]]
+    : [[cx, fy], [left ? 60 : 132, fy], [left ? 60 : 132, 102], [left ? 74 : 118, 102]];
+  const len = route.slice(1).reduce((s, [bx, by], k) => s + Math.abs(bx - route[k][0]) + Math.abs(by - route[k][1]), 0);
+  return { id: it.id, x, y, route, len };
+});
+
+// ponto (pes) e sentido horizontal a `d` px do comeco da rota
+function along({ route, len }, d) {
+  for (let i = 1; i < route.length; i++) {
+    const [ax, ay] = route[i - 1], [bx, by] = route[i], seg = Math.abs(bx - ax) + Math.abs(by - ay);
+    if (d <= seg || i === route.length - 1) {
+      const k = Math.min(d / seg, 1);
+      return [ax + (bx - ax) * k, ay + (by - ay) * k, Math.sign(bx - ax)];
+    }
+    d -= seg;
+  }
 }
 
-// objetos de renda automatica no cenario: posicao fixa, nunca em x 32..64 (a blogueira)
-const OBJ_PAL = {
-  y: '#fff4b0', t: '#5a4a6a', g: '#2b2b3a', w: '#9ff0ff', c: '#7a4a2a', m: '#a8744a', M: '#6a4228',
-  n: '#c9c9d9', b: '#7dffb3', f: '#fff4fb', r: '#e8487a', o: '#000000', d: '#ff7eb6', D: '#c94f92', Y: '#ffd36e',
-};
-const stack = (rows, k) => Array.from({ length: k }, () => rows).flat();
-const PROPS = {
-  ringlight: () => draw(['.yyyyy.', 'y.....y', 'y.....y', 'y.....y', 'y.....y', '.yyyyy.', '...t...', '...t...', '..ttt..'], OBJ_PAL, 23, 37),
-  celular: () => draw(['.ggg.', 'gwwwg', 'gwwwg', 'gwwwg', '.ggg.', '..t..', '..t..', '.ttt.'], OBJ_PAL, 67, 38),
-  estagiaria: () => draw(['..fcf.....', '..fff.....', 'mmmmmmmmmm', 'M........M', 'M........M', 'M........M'], OBJ_PAL, 76, 39),
-  fofoca: () => {
-    draw(['.gggggg...', '.gbbbbg...', '.gbbbbg...', 'nnnnnnnn..', 'mmmmmmmmmm', 'M........M', 'M........M', 'M........M'], OBJ_PAL, 10, 38);
-    draw(['fffffff', 'fo.o.of', 'fffffff', '..f....'], OBJ_PAL, 14, 31);
-  },
-  bots: (n) => draw(stack(['ggggg', 'gbbbg', 'ggggg'], Math.min(n, 5)), OBJ_PAL, 89, 46 - 3 * Math.min(n, 5)),
-  assessoria: () => draw(['YY..YY', 'YYYYYY', '.YrrY.', '.YrrY.', '.YYYY.'], OBJ_PAL, 89, 23),
-  reality: () => draw(['ofofofofof', 'oooooooooo', 'offfffffoo', 'offfffffoo', 'oooooooooo'], OBJ_PAL, 58, 9),
-  cosmeticos: (n) => draw(stack(['dddddd', 'dffffd', 'DDDDDD'], Math.min(n, 5)), OBJ_PAL, 1, 46 - 3 * Math.min(n, 5)),
-};
+// chao pintado uma vez: grama com tufinhos (sorteio fixo, igual em todo aparelho) e caminhos de terra
+const ground = document.createElement('canvas');
+ground.width = W;
+ground.height = H;
+(function paintGround() {
+  const g = ground.getContext('2d');
+  let seed = 7;
+  const rnd = (n) => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return Math.floor((seed / 2 ** 32) * n); };
+  box('#4f9a4a', 0, 0, W, H, g);
+  for (let k = 0; k < 260; k++) {
+    const x = rnd(W - 3), y = rnd(H - 3), kind = rnd(8);
+    if (kind < 3) { box('#3f8a3c', x, y + 1, 1, 1, g); box('#3f8a3c', x + 2, y + 1, 1, 1, g); box('#3f8a3c', x + 1, y, 1, 1, g); }
+    else if (kind < 6) { box('#6ab85a', x, y, 1, 2, g); box('#6ab85a', x + 2, y + 1, 1, 1, g); }
+    else { box(['#ff7eb6', '#ffd36e', '#fff4fb'][kind - 6], x, y, 1, 1, g); }
+  }
+  const strips = [[96, 64, 96, 100], ...AREAS.flatMap((a) => a.route.slice(1).map(([bx, by], k) => [...a.route[k], bx, by]))];
+  for (const [color, pad] of [['#a8804f', 4], ['#c9a06a', 3]]) {
+    for (const [ax, ay, bx, by] of strips) {
+      box(color, Math.min(ax, bx) - pad, Math.min(ay, by) - pad - 2, Math.abs(bx - ax) + pad * 2, Math.abs(by - ay) + pad * 2, g);
+    }
+  }
+  for (let k = 0; k < 60; k++) box('#a8804f', 50 + rnd(100), 60 + rnd(100), 1, 1, g);
+})();
+
+// lote ainda nao comprado: terra escura, cerquinha tracejada e plaquinha
+function lockedLot({ x, y }) {
+  box('#5e4430', x, y, LOT.w, LOT.h);
+  box('#7a5a3a', x + 2, y + 2, LOT.w - 4, LOT.h - 4);
+  for (let d = 0; d < LOT.w; d += 6) { box('#e0c08a', x + d, y, 3, 2); box('#e0c08a', x + d, y + LOT.h - 2, 3, 2); }
+  for (let d = 0; d < LOT.h; d += 6) { box('#e0c08a', x, y + d, 2, 3); box('#e0c08a', x + LOT.w - 2, y + d, 2, 3); }
+  box('#3a2418', x + LOT.w / 2 - 1, y + 20, 2, 10);
+  draw(SIGN, { o: '#3a2418', f: '#fff4fb', r: '#e8487a' }, x + LOT.w / 2 - 4, y + 11);
+}
+
+function lot(a) {
+  if (!state.owned[a.id]) return lockedLot(a);
+  const art = ART[a.id];
+  if (ready(art)) return ctx.drawImage(art, a.x - 4, Math.min(a.y - 1, H - 48));
+  box('#b08a5c', a.x, a.y, LOT.w, LOT.h);
+  const rows = PROPS[a.id];
+  if (rows) draw(rows, PROP_PAL, a.x + (LOT.w - 48) / 2, a.y + LOT.h - 2 - rows.length * 2, 2);
+}
 
 function fit() {
   const dpr = devicePixelRatio || 1;
@@ -166,6 +172,7 @@ function fit() {
 // --- ajudantes: so visual; os seguidores ja entram por advance() ---
 const walkers = new Map();
 let squashUntil = 0;
+const TRIP_MAX = 20; // aba escondida nao vira um "+N" gigante
 
 function scene(t, dt) {
   const live = new Set();
@@ -173,8 +180,8 @@ function scene(t, dt) {
     const key = `${h.id}:${h.i}`;
     live.add(key);
     let w = walkers.get(key);
-    if (!w) { // contratado agora: entra pela esquerda
-      w = { look: { ...BASE_LOOK, ...CREW_LOOK[h.id] }, x: -6, dir: 1, y: 47 + Math.random() * 11, speed: 6 + Math.random() * 8, last: t, next: t + 1 + Math.random() * 2, hop: 0 };
+    if (!w) { // contratado agora: sai da area do proprio item
+      w = { a: AREAS.find((a) => a.id === h.id), look: { ...BASE_LOOK, ...CREW_LOOK[h.id] }, d: 0, dir: 1, face: 1, speed: 14 + Math.random() * 8, last: t, rest: t + Math.random() * 3, hop: 0 };
       walkers.set(key, w);
     }
     w.rate = h.rate;
@@ -182,29 +189,46 @@ function scene(t, dt) {
   for (const key of walkers.keys()) if (!live.has(key)) walkers.delete(key);
 
   for (const w of walkers.values()) {
-    if (t > w.hop) w.x += w.dir * w.speed * dt; // para um instante quando coleta
-    if (w.x > W - 7) w.dir = -1;
-    if (w.x < 1 && w.dir < 0) w.dir = 1;
-    if (t >= w.next) {
-      const n = w.rate * Math.min(t - w.last, 5); // aba escondida nao vira um "+N" gigante
-      w.last = t;
-      w.next = t + 2.5 + Math.random() * 1.5;
+    if (t >= w.rest && t > w.hop) w.d += w.dir * w.speed * dt; // para um instante quando chega
+    if (w.dir > 0 && w.d >= w.a.len) {
+      w.d = w.a.len;
+      w.dir = -1;
       w.hop = t + 0.3;
-      if (n > 0) popAt(w.x + 3, w.y - 12, `+${fmt(n)}`, 'auto');
+      const n = w.rate * Math.min(t - w.last, TRIP_MAX); // renda da viagem inteira, ida e volta
+      w.last = t;
+      const [x, y] = along(w.a, w.d);
+      if (n > 0) popAt(x, y - 24, `+${fmt(n)}`, 'auto');
+    } else if (w.dir < 0 && w.d <= 0) {
+      w.d = 0;
+      w.dir = 1;
+      w.rest = t + 1 + Math.random() * 2;
     }
   }
 
-  ctx.drawImage(room, 0, 0);
-  for (const [id, paint] of Object.entries(PROPS)) if (state.owned[id]) paint(state.owned[id]);
-  if (!state.owned.ringlight) { ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(0, 0, W, H); } // quarto escuro ate comprar o ring light
-  const star = { y: 60, paint: () => draw(SPRITE, PALETTE, 32, (t < squashUntil ? 22 : 20) + (Math.sin(t * 3) > 0.9 ? -1 : 0), 2) };
-  const actors = [...walkers.values()].map((w) => ({ y: w.y, paint: () => {
-    const hop = t < w.hop ? -2 : 0;
-    const legs = t < w.hop ? LEGS[0] : LEGS[Math.floor(t * 6) % 2];
-    draw([...HELPER, ...legs], w.look, w.x, w.y - 10 + hop, 1, w.dir < 0);
-  } }));
+  ctx.drawImage(ground, 0, 0);
+  AREAS.forEach(lot);
+  if (ready(CASA[homeIdx])) ctx.drawImage(CASA[homeIdx], 64, 2);
+  const star = { y: GIRL_FEET, paint: () => ready(GIRL) && ctx.drawImage(GIRL, GIRL_POS[0], GIRL_POS[1] + (t < squashUntil ? 2 : Math.sin(t * 3) > 0.9 ? -1 : 0)) };
+  const actors = [...walkers.values()].map((w) => {
+    const [x, y, dx] = along(w.a, w.d);
+    if (dx) w.face = dx * w.dir;
+    return { y, paint: () => {
+      const hop = t < w.hop ? -3 : 0;
+      const legs = t < w.hop || t < w.rest ? LEGS[0] : LEGS[Math.floor(t * 6) % 2];
+      draw([...HELPER, ...legs], w.look, x - 6, y - 20 + hop, 2, w.face < 0);
+    } };
+  });
   for (const a of [...actors, star].sort((a, b) => a.y - b.y)) a.paint();
+  if (!state.owned.ringlight) box('rgba(0,0,0,.45)', 0, 0, W, H); // noite ate comprar o ring light
 }
+
+const HOME_TOAST = [
+  '',
+  'Mudou pra Kitnet! O aluguel e caro mas a luz natural engaja.',
+  'Apartamento! Agora o fundo do story tem predio e voce tem boleto.',
+  'Cobertura! A vista e linda, o condominio e um assalto.',
+  'Mansao! Tem lustre dourado e zero privacidade, igual sua vida.',
+];
 
 // --- loja ---
 const shop = $('#shop');
@@ -225,14 +249,12 @@ for (const [label, key] of [['TOQUE MAIS FORTE', 'tap'], ['RENDA AUTOMATICA', 'a
 // so mexe no DOM quando o valor mudou: render() roda a cada frame
 const put = (el, key, v) => { if (el[key] !== v) el[key] = v; };
 let homeIdx = home(state);
-paintRoom(homeIdx);
 const goal = $('#goal');
 function render() {
   const h = home(state);
   if (h !== homeIdx) {
     homeIdx = h;
-    paintRoom(h);
-    toast(HOME_LOOK[h].toast);
+    toast(HOME_TOAST[h]);
   }
   const next = nextHome(state);
   put(goal, 'hidden', !next);
@@ -273,7 +295,7 @@ function popAt(x, y, text, kind) {
 function post(clientX, clientY) {
   const { n, viral } = tap(state);
   const r = stage.getBoundingClientRect();
-  if (clientX === undefined) popAt(48, 18, viral ? `VIRALIZOU! +${fmt(n)}` : `+${fmt(n)}`, viral ? 'viral' : '');
+  if (clientX === undefined) popAt(96, 58, viral ? `VIRALIZOU! +${fmt(n)}` : `+${fmt(n)}`, viral ? 'viral' : '');
   else pop(clientX - r.left - 20, clientY - r.top - 20, viral ? `VIRALIZOU! +${fmt(n)}` : `+${fmt(n)}`, viral ? 'viral' : '');
   squashUntil = performance.now() / 1000 + 0.08;
   if (navigator.vibrate) navigator.vibrate(viral ? 40 : 8);
