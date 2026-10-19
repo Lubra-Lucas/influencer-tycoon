@@ -36,8 +36,13 @@
     #star { background: none; border: 0; padding: 0; cursor: pointer; display: block; line-height: 0; }
     #star:focus-visible { outline: 3px dashed var(--gold); outline-offset: 3px; }
     canvas { image-rendering: pixelated; display: block; border: 3px solid #000; }
-    #hint { position: absolute; bottom: 6px; left: 0; right: 0; text-align: center; color: var(--text);
+    #hint { position: absolute; top: 6px; left: 0; right: 0; text-align: center; color: var(--text);
             text-shadow: 2px 2px 0 #000; margin: 0; pointer-events: none; }
+    #goal { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); width: min(90%, 384px);
+            height: 22px; border: 3px solid #000; background: var(--panel); overflow: hidden; pointer-events: none; }
+    #goal span { position: relative; z-index: 1; display: block; text-align: center; font-size: 8px; line-height: 16px;
+                 text-shadow: 2px 2px 0 #000; white-space: nowrap; }
+    #goal i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: #b3306a; }
 
     .pop { position: absolute; pointer-events: none; color: var(--text); text-shadow: 2px 2px 0 #000;
            animation: up 0.9s ease-out forwards; }
@@ -86,6 +91,7 @@
       </header>
       <section id="stage">
         <button id="star" aria-label="Postar: ganhar seguidores"><canvas></canvas></button>
+        <div id="goal"><span></span><i></i></div>
         <p id="hint">toque pra postar</p>
       </section>
     </div>

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { newState, tap, buy, advance, load, fmt, perSecond, cost, crew, ITEMS, OFFLINE_CAP_S } from './game.js';
+import { newState, tap, buy, advance, load, fmt, perSecond, cost, crew, home, nextHome, HOMES, ITEMS, OFFLINE_CAP_S } from './game.js';
 
 test('toque, viral e compra', () => {
   const s = newState(0);
@@ -50,4 +50,14 @@ test('ajudantes dividem a renda do item sem inventar seguidor', () => {
   assert.deepEqual(c.map((h) => h.id), ['ringlight', 'celular', 'celular']);
   assert.equal(c[1].rate, 2.5);
   assert.ok(Math.abs(c.reduce((t, h) => t + h.rate, 0) - perSecond(s)) < 1e-9);
+});
+
+test('casa muda pelo total e a mansao nao tem proxima', () => {
+  const at = (total) => ({ ...newState(0), total });
+  assert.equal(home(at(0)), 0);
+  assert.equal(home(at(29999)), 0);
+  assert.equal(home(at(30000)), 1);
+  assert.equal(home(at(3e8)), HOMES.length - 1);
+  assert.deepEqual(nextHome(at(0)), { name: 'Kitnet', min: 30000 });
+  assert.equal(nextHome(at(3e8)), null);
 });

@@ -44,6 +44,14 @@ export const crew = (state) => ITEMS.filter((it) => it.auto && state.owned[it.id
 });
 export const title = (state) => TITLES.findLast(([min]) => state.total >= min)[1];
 
+// Casa atual pelo total de seguidores, mesmo formato de TITLES.
+export const HOMES = [[0, 'Quarto alugado'], [3e4, 'Kitnet'], [7e5, 'Apartamento'], [2e7, 'Cobertura'], [3e8, 'Mansao']];
+export const home = (state) => HOMES.findLastIndex(([min]) => state.total >= min);
+export const nextHome = (state) => {
+  const next = HOMES[home(state) + 1];
+  return next ? { name: next[1], min: next[0] } : null;
+};
+
 function gain(state, n) {
   state.followers += n;
   state.total += n;
